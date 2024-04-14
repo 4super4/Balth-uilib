@@ -4943,102 +4943,104 @@ do
         end
         
 
-        -- SELECTION BOX CLASS
+        -- SELECTION BOX
         do
-            local selectionBox = {} do
-                selectionBox.__index = selectionBox
-                setmetatable(selectionBox, elemClasses.baseElement)
+                local selectionBox = {} do
+                    selectionBox.__index = selectionBox
+                    setmetatable(selectionBox, elemClasses.baseElement)
 
-                selectionBox.class = 'selectionBox'
+                    selectionBox.class = 'selectionBox'
 
-                do
-                    local instances = {} do
-                        local controlFrame = Instance.new('Frame')
-                        controlFrame.BackgroundTransparency = 1
-                        controlFrame.Name = '#control'
-                        controlFrame.Size = UDim2.new(1, 0, 0, 20)
-                        controlFrame.Visible = true
-                        controlFrame.ZIndex = 34
+                    do
+                        local instances = {} do
+                            local controlFrame = Instance.new('Frame')
+                            controlFrame.BackgroundTransparency = 1
+                            controlFrame.Name = '#control'
+                            controlFrame.Size = UDim2.new(1, 0, 0, 20)
+                            controlFrame.Visible = true
+                            controlFrame.ZIndex = 34
 
-                        instances.controlFrame = controlFrame
+                            instances.controlFrame = controlFrame
 
-                        local dropdown = Instance.new('TextButton')
-                        dropdown.BackgroundTransparency = 1
-                        dropdown.Name = '#dropdown'
-                        dropdown.Size = UDim2.fromScale(1, 1)
-                        dropdown.Text = 'Select Option'
-                        dropdown.TextTransparency = 1
-                        dropdown.ZIndex = 34
+                            local dropdown = Instance.new('TextButton')
+                            dropdown.BackgroundTransparency = 1
+                            dropdown.Name = '#dropdown'
+                            dropdown.Size = UDim2.fromScale(1, 1)
+                            dropdown.Text = ''
+                            dropdown.TextTransparency = 1
+                            dropdown.ZIndex = 34
 
-                        dropdown.Parent = controlFrame
+                            dropdown.Parent = controlFrame
 
-                        local optionsFrame = Instance.new('Frame')
-                        optionsFrame.Size = UDim2.new(1, 0, 0, 100)  -- Adjust size based on options count
-                        optionsFrame.Position = UDim2.new(0, 0, 0, 20)
-                        optionsFrame.BackgroundColor3 = theme.Window3
-                        optionsFrame.Visible = false
-                        optionsFrame.ZIndex = 35
+                            local optionsFrame = Instance.new('Frame')
+                            optionsFrame.Size = UDim2.new(1, 0, 0, 100)  -- Adjustable based on option count
+                            optionsFrame.Position = UDim2.new(0, 0, 0, 20)
+                            optionsFrame.BackgroundColor3 = theme.Window3
+                            optionsFrame.Visible = false
+                            optionsFrame.ZIndex = 35
 
-                        optionsFrame.Parent = controlFrame
+                            optionsFrame.Parent = controlFrame
 
-                        instances.dropdown = dropdown
-                        instances.optionsFrame = optionsFrame
-                    end
-                    selectionBox.instances = instances
-                end
-
-                selectionBox.toggleDropdown = function(self)
-                    local optionsFrame = self.instances.optionsFrame
-                    optionsFrame.Visible = not optionsFrame.Visible
-                end
-
-                selectionBox.new = function(self, options)
-                    local new = setmetatable({}, self)
-                    local instances = {}
-                    for name, instance in pairs(self.instances) do
-                        instances[name] = instance:Clone()
+                            instances.dropdown = dropdown
+                            instances.optionsFrame = optionsFrame
+                        end
+                        selectionBox.instances = instances
                     end
 
-                    -- Setup options inside optionsFrame
-                    for i, option in ipairs(options) do
-                        local optionButton = Instance.new('TextButton')
-                        optionButton.Text = option.text
-                        optionButton.Parent = instances.optionsFrame
-
-                        optionButton.MouseButton1Click:Connect(function()
-                            instances.dropdown.Text = option.text
-                            self:toggleDropdown()
-                        end)
+                    selectionBox.toggleDropdown = function(self)
+                        local optionsFrame = self.instances.optionsFrame
+                        optionsFrame.Visible = not optionsFrame.Visible
                     end
 
-                    new.instances = instances
-                    return new
+                    selectionBox.new = function(self, settings)
+                        local new = setmetatable({}, self)
+                        local instances = {}
+                        for name, instance in pairs(self.instances) do
+                            instances[name] = instance:Clone()
+                        end
+
+                        -- Setup options inside optionsFrame
+                        for i, option in ipairs(settings.options) do
+                            local optionButton = Instance.new('TextButton')
+                            optionButton.Text = option.text
+                            optionButton.Parent = instances.optionsFrame
+
+                            optionButton.MouseButton1Click:Connect(function()
+                                instances.dropdown.Text = option.text
+                                self:toggleDropdown()
+                            end)
+                        end
+
+                        new.instances = instances
+                        new.name = settings.text or 'Select Option'
+                        return new
+                    end
+                end
+                -- Register the selectionBox class with the section
+                elemClasses.selectionBox = selectionBox
+
+                elemClasses.section.addSelectionBox = function(self, settings)
+                    if not typeof(settings) == 'table' then
+                        return error('expected type table for settings', 2)
+                    end
+
+                    local s_options = settings.options or {}
+                    local selectionBox = selectionBox:new(settings)
+                    selectionBox.section = self
+                    selectionBox.name = settings.text or 'Select Option'
+
+                    selectionBox.instances.controlFrame.Parent = self.instances.controlMenu
+
+                    -- Event handling similar to toggle
+                    if typeof(settings.callback) == 'function' then
+                        selectionBox:bindToEvent('onSelect', settings.callback)
+                    end
+
+                    table.insert(self.controls, selectionBox)
+                    return selectionBox
                 end
             end
-            -- Add class to element classes
-            elemClasses.selectionBox = selectionBox
-        end
 
-        -- ADD TO SECTION METHOD
-        function elemClasses.section:addSelectionBox(settings)
-            if not typeof(settings) == 'table' then
-                return error('expected type table for settings', 2)
-            end
-
-            local s_options = settings.options or {}
-            local selectionBox = elemClasses.selectionBox:new(s_options)
-            selectionBox.section = self
-            selectionBox.name = settings.text or 'Select Option'
-
-            selectionBox.instances.controlFrame.Parent = self.instances.controlMenu
-
-            if typeof(settings.callback) == 'function' then
-                selectionBox:bindToEvent('onSelect', settings.callback)
-            end
-
-            table.insert(self.controls, selectionBox)
-            return selectionBox
-        end
 
 
 
