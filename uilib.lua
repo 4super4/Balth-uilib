@@ -4943,7 +4943,7 @@ do
         end
         
 
-        -- SELECTION BOX
+        -- SELECTION BOX CLASS
         do
             local selectionBox = {} do
                 selectionBox.__index = selectionBox
@@ -5017,6 +5017,27 @@ do
             end
             -- Add class to element classes
             elemClasses.selectionBox = selectionBox
+        end
+
+        -- ADD TO SECTION METHOD
+        function elemClasses.section:addSelectionBox(settings)
+            if not typeof(settings) == 'table' then
+                return error('expected type table for settings', 2)
+            end
+
+            local s_options = settings.options or {}
+            local selectionBox = elemClasses.selectionBox:new(s_options)
+            selectionBox.section = self
+            selectionBox.name = settings.text or 'Select Option'
+
+            selectionBox.instances.controlFrame.Parent = self.instances.controlMenu
+
+            if typeof(settings.callback) == 'function' then
+                selectionBox:bindToEvent('onSelect', settings.callback)
+            end
+
+            table.insert(self.controls, selectionBox)
+            return selectionBox
         end
 
 
