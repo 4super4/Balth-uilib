@@ -5,7 +5,7 @@ local ThemeManager = {} do
 
 	ThemeManager.Library = nil
 	ThemeManager.BuiltInThemes = {
-		['Sphincter'] 		= { 1, httpService:JSONDecode('{"FontColor":"ffffff","MainColor":"191919","AccentColor":"0055ff","BackgroundColor":"0f0f12","OutlineColor":"ff0072"}') },
+		['Sphincter'] 		= { 1, httpService:JSONDecode('{"FontColor":"ffffff","MainColor":"191919","AccentColor":"ff0072","BackgroundColor":"0f0f12","OutlineColor":"383838"}') },
 		['Fatality']		= { 2, httpService:JSONDecode('{"FontColor":"ffffff","MainColor":"1e1842","AccentColor":"c50754","BackgroundColor":"191335","OutlineColor":"3c355d"}') },
 	}
 
